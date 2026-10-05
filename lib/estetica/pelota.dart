@@ -71,12 +71,15 @@ class CuteBall extends PositionComponent {
   }
 
   /// Traduce una colision del hitbox a un evento de "he dado a una raqueta".
+  ///
+  /// Flame entrega el **hitbox** con el que choco la pelota, no el componente.
+  /// Hay que desenrollar [ShapeHitbox.hitboxParent] para recuperar la raqueta.
   void _onHitboxCollision(
     Set<Vector2> intersectionPoints,
-    PositionComponent other,
+    ShapeHitbox other,
   ) {
-    // `other` es la raqueta (el padre del hitbox con el que choco la pelota).
-    if (other is CutePaddle) onHitPaddle?.call(other);
+    final owner = other.hitboxParent;
+    if (owner is CutePaddle) onHitPaddle?.call(owner);
   }
 
   @override

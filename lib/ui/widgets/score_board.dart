@@ -22,6 +22,11 @@ class ScoreBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // En pantallas estrechas los dos lados no caben con la tipografia completa,
+    // asi que el separador y el padding se encogen. Sin esto el `Row` se pasa
+    // de ancho y Flutter pinta la franja de "overflowed by N pixels".
+    final anchoEstrecho = MediaQuery.sizeOf(context).width < 400;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -29,12 +34,14 @@ class ScoreBoard extends StatelessWidget {
           label: 'Jugador 1',
           score: player1Score,
           color: CuteTheme.player1,
+          compact: anchoEstrecho,
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: EdgeInsets.symmetric(horizontal: anchoEstrecho ? 4 : 10),
           child: Text(
             '·',
-            style: CuteTheme.title(22).copyWith(color: CuteTheme.lilac),
+            style: CuteTheme.title(anchoEstrecho ? 18 : 22)
+                .copyWith(color: CuteTheme.lilac),
           ),
         ),
         _ScorePill(
@@ -42,6 +49,7 @@ class ScoreBoard extends StatelessWidget {
           score: player2Score,
           color: CuteTheme.player2,
           alignEnd: true,
+          compact: anchoEstrecho,
         ),
       ],
     );
@@ -54,6 +62,7 @@ class _ScorePill extends StatelessWidget {
     required this.score,
     required this.color,
     this.alignEnd = false,
+    this.compact = false,
   });
 
   final String label;
@@ -61,10 +70,16 @@ class _ScorePill extends StatelessWidget {
   final Color color;
   final bool alignEnd;
 
+  /// Reduce margenes y numero cuando el marcador no cabe en pantalla.
+  final bool compact;
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 9 : 16,
+        vertical: compact ? 6 : 8,
+      ),
       decoration: BoxDecoration(
         color: CuteTheme.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(999),
@@ -77,8 +92,8 @@ class _ScorePill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (!alignEnd) ...[
-            _Dot(color: color),
-            const SizedBox(width: 10),
+            _Dot(color: color, small: compact),
+            SizedBox(width: compact ? 6 : 10),
           ],
           Column(
             mainAxisSize: MainAxisSize.min,
@@ -87,12 +102,19 @@ class _ScorePill extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: CuteTheme.font(size: 11, weight: 6, color: CuteTheme.ink),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: CuteTheme.font(
+                  size: compact ? 9 : 11,
+                  weight: 6,
+                  color: CuteTheme.ink,
+                ),
               ),
               Text(
                 '$score',
+                maxLines: 1,
                 style: CuteTheme.font(
-                  size: 26,
+                  size: compact ? 20 : 26,
                   weight: 7,
                   color: CuteTheme.text,
                 ),
@@ -100,8 +122,8 @@ class _ScorePill extends StatelessWidget {
             ],
           ),
           if (alignEnd) ...[
-            const SizedBox(width: 10),
-            _Dot(color: color),
+            SizedBox(width: compact ? 6 : 10),
+            _Dot(color: color, small: compact),
           ],
         ],
       ),
@@ -110,15 +132,18 @@ class _ScorePill extends StatelessWidget {
 }
 
 class _Dot extends StatelessWidget {
-  const _Dot({required this.color});
+  const _Dot({required this.color, this.small = false});
 
   final Color color;
+
+  /// Version reducida para pantallas estrechas.
+  final bool small;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 14,
-      height: 14,
+      width: small ? 10 : 14,
+      height: small ? 10 : 14,
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,

@@ -67,6 +67,7 @@ class PongGame extends FlameGame
     required this.sprites,
     this.difficulty = Difficulty.medio,
     this.onGameOver,
+    this.onScoreChanged,
   });
 
   /// Modo elegido en el menu.
@@ -80,6 +81,9 @@ class PongGame extends FlameGame
 
   /// Se invoca una sola vez cuando alguien gana.
   final ValueChanged<GameResult>? onGameOver;
+
+  /// Se invoca cada vez que el marcador cambia, para que el HUD se refresque.
+  final ValueChanged<Score>? onScoreChanged;
 
   final Score score = Score();
   final math.Random _random = math.Random();
@@ -122,6 +126,15 @@ class PongGame extends FlameGame
   ///
   /// Es publico para poder ejecutar la puntuacion desde las pruebas.
   void awardPoint(PaddleSide scorer) => _scorePoint(scorer);
+
+  /// Salta la cuenta atras y saca la pelota hacia [direction].
+  ///
+  /// Solo para pruebas: evita tener que simular los 3 s del aviso.
+  @visibleForTesting
+  void debugStartPlaying({int direction = 1}) {
+    phase = MatchPhase.playing;
+    _serve(direction: direction);
+  }
 
   @override
   Color backgroundColor() => CuteTheme.background;
@@ -391,13 +404,17 @@ class PongGame extends FlameGame
   }
 
   /// Detecta el punto cuando la pelota cruza detras de una raqueta.
+  ///
+  /// El punto es para el jugador **contrario** al que dejo pasar la pelota:
+  /// si se escapa por la izquierda fallo el jugador 1 y puntua el 2, y al
+  /// reves si se escapa por la derecha fallo el jugador 2 y puntua el 1.
   void _checkScore() {
     final r = _ball.size.x / 2;
 
     if (_ball.position.x + r < 0) {
-      _scorePoint(PaddleSide.left);
-    } else if (_ball.position.x - r > size.x) {
       _scorePoint(PaddleSide.right);
+    } else if (_ball.position.x - r > size.x) {
+      _scorePoint(PaddleSide.left);
     }
   }
 
@@ -447,6 +464,8 @@ class PongGame extends FlameGame
     } else {
       score.player2++;
     }
+
+    onScoreChanged?.call(score);
 
     _lastScorer = scorer;
     phase = MatchPhase.pointScored;

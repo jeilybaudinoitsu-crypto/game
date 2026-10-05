@@ -24,6 +24,10 @@ class _MenuScreenState extends State<MenuScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _waddle;
 
+  /// Desplazamiento propio del menu, para no depender del
+  /// `PrimaryScrollController` (ver `build`).
+  final ScrollController _scroll = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -37,6 +41,7 @@ class _MenuScreenState extends State<MenuScreen>
   @override
   void dispose() {
     _waddle.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -54,11 +59,18 @@ class _MenuScreenState extends State<MenuScreen>
               final bunnyHeight = compact ? 118.0 : 168.0;
 
               return SingleChildScrollView(
+                // `primary: false` + controlador propio: sin esto el
+                // `SingleChildScrollView` se engancha al
+                // `PrimaryScrollController`, que Flutter desplaza al dar
+                // autofocus o al saltar entre pantallas. Ese salto es el
+                // "la pantalla se mueve" al entrar en la partida.
+                controller: _scroll,
+                primary: false,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                      horizontal: 28,
+                      horizontal: compact ? 16 : 28,
                       vertical: compact ? 10 : 24,
                     ),
                     child: Column(
@@ -86,7 +98,7 @@ class _MenuScreenState extends State<MenuScreen>
 
                         // --- Titulo --------------------------------------
                         Text(
-                          'Pin Pon Cute',
+                          'Pin Pon Game',
                           textAlign: TextAlign.center,
                           style: CuteTheme.title(compact ? 34 : 44),
                         ),

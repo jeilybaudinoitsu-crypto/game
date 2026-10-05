@@ -55,6 +55,7 @@ class _GameScreenState extends State<GameScreen> {
         difficulty: widget.difficulty,
         sprites: BunnySpritesScope.of(context),
         onGameOver: _onGameOver,
+        onScoreChanged: _onScoreChanged,
       );
     }
   }
@@ -64,6 +65,13 @@ class _GameScreenState extends State<GameScreen> {
   void _onGameOver(GameResult result) {
     if (!mounted) return;
     setState(() => _result = result);
+  }
+
+  /// El marcador del HUD se lee del juego, asi que hay que repintar cuando
+  /// cambia. Sin esto el tablero se queda congelado en el marcador inicial.
+  void _onScoreChanged(Score _) {
+    if (!mounted) return;
+    setState(() {});
   }
 
   void _restart() {
@@ -138,7 +146,13 @@ class _GameScreenState extends State<GameScreen> {
           ),
 
           // --- Panel de resultado -----------------------------------------
-          if (finished) _ResultOverlay(result: _result!, onRestart: _restart, onExit: widget.onExit),
+          if (finished)
+            _ResultOverlay(
+              result: _result!,
+              mode: widget.mode,
+              onRestart: _restart,
+              onExit: widget.onExit,
+            ),
         ],
       ),
     );
@@ -164,17 +178,40 @@ class _GameScreenState extends State<GameScreen> {
   }
 }
 
+/// Lado del marcador al que pertenece una puntuacion.
+enum PlayerSlot { player1, player2 }
+
 /// Panel modal con el resultado de la partida.
 class _ResultOverlay extends StatelessWidget {
   const _ResultOverlay({
     required this.result,
+    required this.mode,
     required this.onRestart,
     required this.onExit,
   });
 
   final GameResult result;
+  final GameMode mode;
   final VoidCallback onRestart;
   final VoidCallback onExit;
+
+  /// Titulo del panel segun quien gane y el modo de juego.
+  ///
+  /// En [GameMode.vsAI] el jugador 1 siempre es el usuario, asi que "ganaste"
+  /// depende de el. En [GameMode.vsFriend] hay que nombrar al ganador.
+  String _titleFor({required bool won}) {
+    if (mode == GameMode.vsAI) {
+      return won ? '¡Ganaste!' : '¡Buen intento!';
+    }
+    return won ? '¡Ganó Jugador 1!' : '¡Ganó Jugador 2!';
+  }
+
+  /// Nombre que se muestra sobre la puntuacion de [slot].
+  String _labelFor(PlayerSlot slot) {
+    final isPlayer1 = slot == PlayerSlot.player1;
+    if (mode == GameMode.vsAI) return isPlayer1 ? 'Tú' : 'IA';
+    return isPlayer1 ? 'Jugador 1' : 'Jugador 2';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,10 +250,21 @@ class _ResultOverlay extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        won ? '¡Ganaste!' : '¡Buen intento!',
+                        _titleFor(won: won),
                         style: CuteTheme.title(compact ? 26 : 32),
                       ),
                       const SizedBox(height: 8),
+                      // Etiquetas sobre la linea: deja claro a quien pertenece
+                      // cada numero, sobre todo en modo dos jugadores.
+                      Text(
+                        '${_labelFor(PlayerSlot.player1)}  ·  ${_labelFor(PlayerSlot.player2)}',
+                        style: CuteTheme.font(
+                          size: 13,
+                          weight: 6,
+                          color: CuteTheme.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
                       Text(
                         '${result.player1Score}  —  ${result.player2Score}',
                         style: CuteTheme.font(
