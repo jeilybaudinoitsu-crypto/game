@@ -1,11 +1,11 @@
 {
-    "name": "game",
-    "short_name": "game",
+    "name": "Pin Pon Cute",
+    "short_name": "Pin Pon Cute",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Minijuego de Pin Pon con estetica pastel y una mascota conejo.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
