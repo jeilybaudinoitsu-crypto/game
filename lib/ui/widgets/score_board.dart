@@ -4,8 +4,7 @@ import '../../estetica/color.dart';
 
 /// Marcador superior: muestra los puntos de cada jugador.
 ///
-/// El conejo de la partida es quien canta el marcador; aqui solo se ve el
-/// numero, junto al color de cada raqueta.
+/// Muestra los puntos de cada jugador junto al color de su raqueta.
 class ScoreBoard extends StatelessWidget {
   const ScoreBoard({
     super.key,

@@ -7,7 +7,6 @@ import 'package:game/estetica/raqueta.dart';
 import 'package:game/game/game_config.dart';
 import 'package:game/game/keyboard_input.dart';
 import 'package:game/game/pong_game.dart';
-import 'package:game/mascota/conejo_mascota.dart';
 
 // Los eventos de teclado de Flutter exigen `physicalKey` (de tipo
 // `PhysicalKeyboardKey`) y `timeStamp`, asi que se pasan los dos.
@@ -194,21 +193,6 @@ void main() {
     });
   });
 
-  group('BunnySprites', () {
-    test('la biblioteca vacia responde null para cualquier fotograma', () {
-      final sprites = BunnySprites.empty();
-
-      expect(sprites.isEmpty, isTrue);
-      expect(sprites[kBunnyFrames.values.first.first], isNull);
-    });
-
-    test('se declaran fotogramas para todas las poses', () {
-      for (final pose in BunnyPose.values) {
-        expect(kBunnyFrames[pose], isNotEmpty, reason: 'sin fotogramas: $pose');
-      }
-    });
-  });
-
   group('PongGame', () {
     // Atajos para simular una tecla mantenida y soltada.
     void pressKey(KeyboardInput input, PhysicalKeyboardKey p, LogicalKeyboardKey l) =>
@@ -227,7 +211,6 @@ void main() {
           () => PongGame(
             mode: mode ?? GameMode.vsAI,
             difficulty: difficulty ?? Difficulty.medio,
-            sprites: BunnySprites.empty(),
           ),
           gameSize: Vector2(800, 600),
         );
@@ -237,7 +220,6 @@ void main() {
           () => PongGame(
             mode: GameMode.vsAI,
             difficulty: Difficulty.medio,
-            sprites: BunnySprites.empty(),
             onGameOver: capture,
           ),
           gameSize: Vector2(800, 600),

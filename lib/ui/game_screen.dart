@@ -4,9 +4,6 @@ import 'package:flutter/material.dart';
 import '../estetica/color.dart';
 import '../game/game_config.dart';
 import '../game/pong_game.dart';
-import '../mascota/bunny_sprites_scope.dart';
-import '../mascota/conejo_mascota.dart';
-import '../mascota/conejo_widget.dart';
 import 'menu_screen.dart';
 import 'widgets/cute_button.dart';
 import 'widgets/score_board.dart';
@@ -41,26 +38,13 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void initState() {
     super.initState();
+    _game = PongGame(
+      mode: widget.mode,
+      difficulty: widget.difficulty,
+      onGameOver: _onGameOver,
+      onScoreChanged: _onScoreChanged,
+    );
   }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // El juego se crea aqui porque necesita los sprites del scope, que solo
-    // estan disponibles una vez montado el widget.
-    if (!_initialized) {
-      _initialized = true;
-      _game = PongGame(
-        mode: widget.mode,
-        difficulty: widget.difficulty,
-        sprites: BunnySpritesScope.of(context),
-        onGameOver: _onGameOver,
-        onScoreChanged: _onScoreChanged,
-      );
-    }
-  }
-
-  bool _initialized = false;
 
   void _onGameOver(GameResult result) {
     if (!mounted) return;
@@ -104,19 +88,18 @@ class _GameScreenState extends State<GameScreen> {
             left: 0,
             right: 0,
             child: IgnorePointer(
-              child: AnimatedOpacity(
-                opacity: finished ? 0 : 1,
-                duration: const Duration(milliseconds: 250),
-                child: Center(
-                  child: ScoreBoard(
-                    player1Score: _game.score.player1,
-                    player2Score: _game.score.player2,
-                    pointsToWin: GameConfig.pointsToWin,
-                    player2Label:
-                        widget.mode == GameMode.vsAI ? 'IA' : 'Jugador 2',
-                  ),
-                ),
-              ),
+              // Aparece y desaparece de golpe, sin fundido.
+              child: finished
+                  ? const SizedBox.shrink()
+                  : Center(
+                      child: ScoreBoard(
+                        player1Score: _game.score.player1,
+                        player2Score: _game.score.player2,
+                        pointsToWin: GameConfig.pointsToWin,
+                        player2Label:
+                            widget.mode == GameMode.vsAI ? 'IA' : 'Jugador 2',
+                      ),
+                    ),
             ),
           ),
 
@@ -137,11 +120,10 @@ class _GameScreenState extends State<GameScreen> {
             right: 0,
             bottom: MediaQuery.paddingOf(context).bottom + 12,
             child: IgnorePointer(
-              child: AnimatedOpacity(
-                opacity: finished ? 0 : 1,
-                duration: const Duration(milliseconds: 250),
-                child: Center(child: _controlsHint()),
-              ),
+              // Aparece y desaparece de golpe, sin fundido.
+              child: finished
+                  ? const SizedBox.shrink()
+                  : Center(child: _controlsHint()),
             ),
           ),
 
@@ -244,9 +226,12 @@ class _ResultOverlay extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      BunnySpriteView(
-                        pose: won ? BunnyPose.win : BunnyPose.lose,
-                        height: compact ? 110 : 150,
+                      Icon(
+                        won
+                            ? Icons.celebration_rounded
+                            : Icons.sports_tennis_rounded,
+                        size: compact ? 54 : 68,
+                        color: CuteTheme.player1,
                       ),
                       const SizedBox(height: 6),
                       Text(

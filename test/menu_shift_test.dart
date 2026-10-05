@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:game/main.dart';
-import 'package:game/mascota/conejo_mascota.dart';
 import 'package:game/ui/menu_screen.dart';
 import 'package:game/ui/widgets/score_board.dart';
 
 /// Pruebas de regresion de los bugs 1-4 reportados.
 void main() {
-  /// Avanza la animacion infinita del conejo sin usar `pumpAndSettle`.
+  /// Avanza unos frames para que se completen los cambios de pantalla.
   Future<void> settle(WidgetTester tester, [int frames = 12]) async {
     for (var i = 0; i < frames; i++) {
       await tester.pump(const Duration(milliseconds: 16));
@@ -20,7 +19,7 @@ void main() {
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(PinPonApp(sprites: BunnySprites.empty()));
+      await tester.pumpWidget(const PinPonApp());
       await settle(tester);
 
       final titulo = find.text('Pin Pon Cute');
@@ -43,7 +42,7 @@ void main() {
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(PinPonApp(sprites: BunnySprites.empty()));
+      await tester.pumpWidget(const PinPonApp());
       await settle(tester);
 
       final antes = tester.getTopLeft(find.text('Pin Pon Cute'));

@@ -10,7 +10,6 @@ import '../estetica/color.dart';
 import '../estetica/extra.dart';
 import '../estetica/pelota.dart';
 import '../estetica/raqueta.dart';
-import '../mascota/conejo_mascota.dart';
 import 'ai_controller.dart';
 import 'game_config.dart';
 import 'keyboard_input.dart';
@@ -41,7 +40,7 @@ class GameResult {
 
 /// Estados de la partida.
 enum MatchPhase {
-  /// Aviso "Preparados" con el conejo calentandose.
+  /// Pausa inicial antes de poner la pelota en juego.
   countdown,
 
   /// Pelota en juego.
@@ -64,7 +63,6 @@ class PongGame extends FlameGame
     with HasCollisionDetection, HasKeyboardHandlerComponents {
   PongGame({
     required this.mode,
-    required this.sprites,
     this.difficulty = Difficulty.medio,
     this.onGameOver,
     this.onScoreChanged,
@@ -72,9 +70,6 @@ class PongGame extends FlameGame
 
   /// Modo elegido en el menu.
   final GameMode mode;
-
-  /// Sprites de la mascota conejo.
-  final BunnySprites sprites;
 
   /// Dificultad de la IA (solo en [GameMode.vsAI]).
   final Difficulty difficulty;
@@ -94,7 +89,6 @@ class PongGame extends FlameGame
   late final CutePaddle _paddle1;
   late final CutePaddle _paddle2;
   late final PastelBackdrop _backdrop;
-  late final BunnyMascot _mascot;
 
   MatchPhase phase = MatchPhase.countdown;
   double _phaseTimer = 0;
@@ -102,7 +96,7 @@ class PongGame extends FlameGame
   double _paddleSpeed = 0;
   bool _resultSent = false;
 
-  /// Ultimo lado que scored (para orientar al conejo y decidir el saque).
+  /// Ultimo lado que anoto para decidir hacia donde sacar.
   PaddleSide? _lastScorer;
 
   /// `true` cuando [onLoad] ya creo la cancha. El primer `onGameResize` puede
@@ -160,15 +154,6 @@ class PongGame extends FlameGame
     // Marco de la cancha.
     await add(CourtFrame(position: Vector2.zero(), size: size));
 
-    // Mascota: arriba, entre las dos zonas de juego.
-    _mascot = BunnyMascot(
-      position: Vector2(size.x / 2, size.y * 0.10),
-      sprites: sprites,
-      spriteHeight: _mascotHeightFor(size),
-      anchor: Anchor.center,
-    );
-    await add(_mascot);
-
     final paddleSize = _paddleSizeFor(size.y);
     final margin = size.x * GameConfig.paddleMarginRatio;
 
@@ -208,10 +193,6 @@ class PongGame extends FlameGame
     // ajustar sus medidas.
     _sceneBuilt = true;
   }
-
-  /// Alto de la mascota en funcion del tamano de la cancha.
-  static double _mascotHeightFor(Vector2 field) =>
-      math.min(field.y * 0.15, math.min(field.x * 0.16, 108.0));
 
   Vector2 _paddleSizeFor(double fieldHeight) {
     final h = math.min(
@@ -271,11 +252,6 @@ class PongGame extends FlameGame
     _paddle1.position.x = margin;
     _paddle2.position.x = size.x - margin - paddleSize.x;
 
-    final mascotHeight = _mascotHeightFor(size);
-    _mascot
-      ..position = Vector2(size.x / 2, size.y * 0.10)
-      ..size = Vector2(mascotHeight * 1.6, mascotHeight);
-
     _ball.position = Vector2(size.x / 2, size.y / 2);
     _ball.resetTrail();
   }
@@ -284,9 +260,6 @@ class PongGame extends FlameGame
     phase = MatchPhase.countdown;
     _phaseTimer = GameConfig.countdownSeconds;
     _holdBallInCenter();
-    _mascot
-      ..play(BunnyPose.warmup, returnToIdle: false)
-      ..say('¡Prepárense!');
   }
 
   /// Congela la pelota en el centro durante el aviso y entre puntos.
@@ -334,9 +307,6 @@ class PongGame extends FlameGame
       _phaseTimer -= dt;
       if (_phaseTimer <= 0) {
         phase = MatchPhase.playing;
-        _mascot
-          ..play(BunnyPose.idle)
-          ..hideMessage();
         // Al terminar el aviso hay que sacar: sin esto la pelota se queda
         // congelada en el centro y la partida nunca arranca.
         _serve(direction: _lastScorer == PaddleSide.left ? 1 : -1);
@@ -352,9 +322,6 @@ class PongGame extends FlameGame
           _finish();
         } else {
           phase = MatchPhase.playing;
-          _mascot
-            ..play(BunnyPose.idle)
-            ..hideMessage();
           // Saca hacia el lado del ultimo que scored.
           _serve(direction: _lastScorer == PaddleSide.left ? 1 : -1);
         }
@@ -452,9 +419,8 @@ class PongGame extends FlameGame
       math.cos(angle).abs() * horizontalSign,
       math.sin(angle),
     ).normalized().scaled(speed);
-
     paddle.flash();
-    _mascot.play(BunnyPose.hit);
+    paddle.flash();
   }
 
   /// Registra un punto para [scorer].
@@ -472,28 +438,12 @@ class PongGame extends FlameGame
     _phaseTimer = 1.6;
 
     _holdBallInCenter();
-
-    // El conejo da el marcador: anuncia el punto y lo celebra.
-    final total = score.player1 + score.player2;
-    _mascot
-      ..facingRight = scorer == PaddleSide.left
-      ..play(BunnyPose.run)
-      ..say('+1  ·  $total en total');
   }
 
   void _finish() {
     phase = MatchPhase.finished;
 
     final player1Won = score.player1 >= GameConfig.pointsToWin;
-    _mascot.play(
-      player1Won ? BunnyPose.win : BunnyPose.lose,
-      returnToIdle: false,
-    );
-    _mascot.say(
-      player1Won ? '¡Ganaste!' : '¡Buen intento!',
-      seconds: 4,
-    );
-
     if (!_resultSent) {
       _resultSent = true;
       onGameOver?.call(
@@ -511,7 +461,6 @@ class PongGame extends FlameGame
     score.reset();
     _resultSent = false;
     _lastScorer = null;
-    _mascot.hideMessage();
     _startCountdown();
   }
 }

@@ -1,7 +1,7 @@
 # Pin Pon Cute
 
 Minijuego de Pin Pong hecho con **Flutter** y **Flame**, con estetica pastel,
-mascota conejo y soporte para Android, iOS y Web.
+soporte para Android, iOS y Web.
 
 Gana **7 puntos** para llevarte la partida. Puedes jugar contra la computadora
 (en tres niveles de dificultad) o contra un amigo en el mismo dispositivo.
@@ -34,25 +34,18 @@ lib/
 │   ├── color.dart             # Paleta pastel (CuteTheme)
 │   ├── extra.dart             # Fondo, red y marco de la cancha
 │   ├── pelota.dart            # CuteBall: circulo durazno con brillo y estela
-│   ├── raqueta.dart           # CutePaddle: capsula pastel con control tactil
-│   └── conejo.dart            # Utiles de dibujo del conejo
+│   └── raqueta.dart           # CutePaddle: capsula pastel con control tactil
 ├── game/
 │   ├── pong_game.dart         # Lógica de la partida: fases, saque, rebotes y marcador
 │   ├── game_config.dart       # Constantes de reglas y dificultades
 │   ├── ai_controller.dart     # Dificultad y error de la computadora
 │   └── keyboard_input.dart    # Mapeo de teclas (W/S y flechas)
-├── mascota/
-│   ├── bunny_sprites_scope.dart   # Carga y comparte los PNG del conejo
-│   ├── conejo_mascota.dart        # Componente Flame: poses y animaciones
-│   └── conejo_widget.dart         # Version como widget normal para la UI
 ├── ui/
 │   ├── menu_screen.dart       # Menu, selector de dificultad
 │   ├── game_screen.dart       # Pantalla de partida: HUD y panel de resultado
 │   └── widgets/
 │       ├── cute_button.dart   # Boton pastel
 │       └── score_board.dart   # Marcador superior
-└── assets/imagenes/           # 6 PNG del conejo (idle, warmup, run, hit, win, lose)
-
 assets/fonts/                  # Fredoka (Regular, Medium, SemiBold, Bold)
 test/                          # Pruebas unitarias, de widgets y de regresión
 ```

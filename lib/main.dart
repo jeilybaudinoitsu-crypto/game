@@ -2,36 +2,21 @@ import 'package:flutter/material.dart';
 
 import 'estetica/color.dart';
 import 'game/game_config.dart';
-import 'mascota/bunny_sprites_scope.dart';
-import 'mascota/conejo_mascota.dart';
 import 'ui/game_screen.dart';
 import 'ui/menu_screen.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Los sprites del conejo se cargan una sola vez y se comparten con el menu y
-  // las partidas mediante `BunnySpritesScope`.
-  final sprites = await BunnySprites.load();
-
-  runApp(PinPonApp(sprites: sprites));
-}
+void main() => runApp(const PinPonApp());
 
 class PinPonApp extends StatelessWidget {
-  const PinPonApp({super.key, required this.sprites});
-
-  final BunnySprites sprites;
+  const PinPonApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BunnySpritesScope(
-      sprites: sprites,
-      child: MaterialApp(
-        title: 'Pin Pon Cute',
-        debugShowCheckedModeBanner: false,
-        theme: _buildTheme(),
-        home: const MenuScreenHost(),
-      ),
+    return MaterialApp(
+      title: 'Pin Pon Cute',
+      debugShowCheckedModeBanner: false,
+      theme: _buildTheme(),
+      home: const MenuScreenHost(),
     );
   }
 

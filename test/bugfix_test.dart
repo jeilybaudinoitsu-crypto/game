@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:game/estetica/raqueta.dart';
 import 'package:game/game/game_config.dart';
 import 'package:game/game/pong_game.dart';
-import 'package:game/mascota/conejo_mascota.dart';
 import 'package:game/ui/widgets/score_board.dart';
 
 /// Regresiones de los bugs reportados en partida.
@@ -18,7 +17,6 @@ void main() {
         () => PongGame(
           mode: mode,
           difficulty: Difficulty.medio,
-          sprites: BunnySprites.empty(),
           onScoreChanged: onScoreChanged,
         ),
         gameSize: Vector2(800, 600),

@@ -6,8 +6,7 @@ import 'package:game/ui/menu_screen.dart';
 
 /// Avanza el tiempo un numero fijo de pasos.
 ///
-/// No se usa `pumpAndSettle` porque el conejo del menu anima en bucle y nunca
-/// se estabiliza.
+/// Usa un numero fijo de pasos para completar las transiciones de la interfaz.
 Future<void> settle(WidgetTester tester) async {
   for (var i = 0; i < 6; i++) {
     await tester.pump(const Duration(milliseconds: 120));

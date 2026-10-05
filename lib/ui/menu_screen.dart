@@ -3,13 +3,9 @@ import 'package:flutter/material.dart';
 
 import '../estetica/color.dart';
 import '../game/game_config.dart';
-import '../mascota/conejo_mascota.dart';
-import '../mascota/conejo_widget.dart';
 import 'widgets/cute_button.dart';
 
 /// Pantalla de inicio: elige entre jugar contra la IA o contra un amigo.
-///
-/// La mascota conejo aparece en el menu y es la que da la bienvenida.
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key, required this.onStart});
 
@@ -20,27 +16,13 @@ class MenuScreen extends StatefulWidget {
   State<MenuScreen> createState() => _MenuScreenState();
 }
 
-class _MenuScreenState extends State<MenuScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _waddle;
-
+class _MenuScreenState extends State<MenuScreen> {
   /// Desplazamiento propio del menu, para no depender del
   /// `PrimaryScrollController` (ver `build`).
   final ScrollController _scroll = ScrollController();
 
   @override
-  void initState() {
-    super.initState();
-    // Va alternando `idle` y `warmup` para que el conejo no se quede quieto.
-    _waddle = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 4200),
-    )..repeat();
-  }
-
-  @override
   void dispose() {
-    _waddle.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -54,10 +36,8 @@ class _MenuScreenState extends State<MenuScreen>
       body: Container(
         decoration: const BoxDecoration(gradient: CuteTheme.backdrop),
         child: SafeArea(
-          child: LayoutBuilder(
+          child:           LayoutBuilder(
             builder: (context, constraints) {
-              final bunnyHeight = compact ? 118.0 : 168.0;
-
               return SingleChildScrollView(
                 // `primary: false` + controlador propio: sin esto el
                 // `SingleChildScrollView` se engancha al
@@ -76,29 +56,11 @@ class _MenuScreenState extends State<MenuScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // --- Mascota -------------------------------------
-                        SizedBox(
-                          height: bunnyHeight,
-                          child: AnimatedBuilder(
-                            animation: _waddle,
-                            builder: (context, _) {
-                              // Primero se calienta, luego descansa.
-                              final warming =
-                                  _waddle.value < 0.5;
-                              return BunnySpriteView(
-                                pose: warming
-                                    ? BunnyPose.warmup
-                                    : BunnyPose.idle,
-                                height: bunnyHeight,
-                              );
-                            },
-                          ),
-                        ),
-                        SizedBox(height: compact ? 10 : 20),
+                        SizedBox(height: compact ? 18 : 36),
 
                         // --- Titulo --------------------------------------
                         Text(
-                          'Pin Pon Game',
+                          'Pin Pon Cute',
                           textAlign: TextAlign.center,
                           style: CuteTheme.title(compact ? 34 : 44),
                         ),

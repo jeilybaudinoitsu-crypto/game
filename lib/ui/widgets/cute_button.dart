@@ -48,62 +48,56 @@ class _CuteButtonState extends State<CuteButton> {
         onTapUp: enabled ? (_) => setState(() => _pressed = false) : null,
         onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
         onTap: widget.onPressed,
-        child: AnimatedScale(
-          scale: _pressed ? 0.96 : 1.0,
-          duration: const Duration(milliseconds: 110),
-          curve: Curves.easeOut,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 160),
-            height: widget.height,
-            padding: const EdgeInsets.symmetric(horizontal: 26),
-            decoration: BoxDecoration(
-              gradient: enabled
-                  ? (widget.gradient ?? CuteTheme.buttonGradient)
-                  : null,
-              color: enabled ? null : CuteTheme.white.withValues(alpha: 0.45),
-              borderRadius: BorderRadius.circular(widget.height / 2),
-              border: Border.all(
-                color: CuteTheme.white.withValues(alpha: 0.85),
-                width: 2.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: CuteTheme.shadow,
-                  offset: Offset(0, _pressed ? 2 : 6),
-                  blurRadius: _pressed ? 4 : 12,
-                ),
-              ],
+        child: Container(
+          height: widget.height,
+          padding: const EdgeInsets.symmetric(horizontal: 26),
+          decoration: BoxDecoration(
+            gradient: enabled
+                ? (widget.gradient ?? CuteTheme.buttonGradient)
+                : null,
+            color: enabled ? null : CuteTheme.white.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(widget.height / 2),
+            border: Border.all(
+              color: CuteTheme.white.withValues(alpha: 0.85),
+              width: 2.5,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (widget.icon != null) ...[
-                  Icon(
-                    widget.icon,
+            boxShadow: [
+              BoxShadow(
+                color: CuteTheme.shadow,
+                offset: Offset(0, _pressed ? 2 : 6),
+                blurRadius: _pressed ? 4 : 12,
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (widget.icon != null) ...[
+                Icon(
+                  widget.icon,
+                  color: enabled
+                      ? widget.foregroundColor
+                      : CuteTheme.ink.withValues(alpha: 0.5),
+                  size: widget.fontSize + 4,
+                ),
+                const SizedBox(width: 10),
+              ],
+              Flexible(
+                child: Text(
+                  widget.label,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: CuteTheme.font(
+                    size: widget.fontSize,
+                    weight: 7,
                     color: enabled
                         ? widget.foregroundColor
                         : CuteTheme.ink.withValues(alpha: 0.5),
-                    size: widget.fontSize + 4,
-                  ),
-                  const SizedBox(width: 10),
-                ],
-                Flexible(
-                  child: Text(
-                    widget.label,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: CuteTheme.font(
-                      size: widget.fontSize,
-                      weight: 7,
-                      color: enabled
-                          ? widget.foregroundColor
-                          : CuteTheme.ink.withValues(alpha: 0.5),
-                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

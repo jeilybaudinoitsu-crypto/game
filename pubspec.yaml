@@ -1,5 +1,5 @@
 name: game
-description: "Pin Pon Cute — mini juego de pong con estética pastel y mascota conejo."
+description: "Pin Pon Cute — mini juego de pong con estética pastel."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -26,9 +26,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  assets:
-    - lib/assets/imagenes/
 
   fonts:
     - family: Fredoka
