@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../estetica/color.dart';
 import '../game/game_config.dart';
+import '../personajes/conejo_animation_view.dart';
+import '../personajes/conejo_player.dart';
 import 'widgets/cute_button.dart';
 
 /// Pantalla de inicio: elige entre jugar contra la IA o contra un amigo.
@@ -36,7 +38,7 @@ class _MenuScreenState extends State<MenuScreen> {
       body: Container(
         decoration: const BoxDecoration(gradient: CuteTheme.backdrop),
         child: SafeArea(
-          child:           LayoutBuilder(
+          child: LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
                 // `primary: false` + controlador propio: sin esto el
@@ -76,6 +78,24 @@ class _MenuScreenState extends State<MenuScreen> {
                         ),
 
                         SizedBox(height: compact ? 18 : 34),
+
+                        // --- Conejo de bienvenida ---------------------------
+                        // Se reserva el hueco con una altura fija proporcional
+                        // para que el menu no salte al cargar el sprite.
+                        SizedBox(
+                          height: (constraints.maxHeight * 0.26).clamp(
+                            120.0,
+                            240.0,
+                          ),
+                          width: double.infinity,
+                          child: const ConejoAnimationView(
+                            animation: ConejoAnimation.inicio,
+                            widthFraction: 0.62,
+                            heightFraction: 1,
+                          ),
+                        ),
+
+                        SizedBox(height: compact ? 14 : 24),
 
                         // --- Botones -------------------------------------
                         ConstrainedBox(
@@ -222,18 +242,18 @@ class _DifficultyOption extends StatelessWidget {
   }
 
   static IconData _iconFor(Difficulty d) => switch (d) {
-        Difficulty.facil => Icons.emoji_emotions_rounded,
-        Difficulty.medio => Icons.local_fire_department_rounded,
-        Difficulty.dificil => Icons.whatshot_rounded,
-      };
+    Difficulty.facil => Icons.emoji_emotions_rounded,
+    Difficulty.medio => Icons.local_fire_department_rounded,
+    Difficulty.dificil => Icons.whatshot_rounded,
+  };
 
   static Gradient _gradientFor(Difficulty d) => switch (d) {
-        Difficulty.facil => CuteTheme.buttonGradientAlt,
-        Difficulty.medio => CuteTheme.buttonGradient,
-        Difficulty.dificil => const LinearGradient(
-            colors: [Color(0xFFE0BBE4), Color(0xFFC7CEEA)],
-          ),
-      };
+    Difficulty.facil => CuteTheme.buttonGradientAlt,
+    Difficulty.medio => CuteTheme.buttonGradient,
+    Difficulty.dificil => const LinearGradient(
+      colors: [Color(0xFFE0BBE4), Color(0xFFC7CEEA)],
+    ),
+  };
 }
 
 /// `true` en Web y escritorio, donde los raquetas se controlan con el teclado.

@@ -130,8 +130,13 @@ class PongGame extends FlameGame
     _serve(direction: direction);
   }
 
+  /// Fondo transparente a proposito.
+  ///
+  /// Flame pinta su fondo por defecto (negro) detras de los componentes. Al
+  /// dejarlo transparente se ve el degradado pastel de la pantalla, que esta
+  /// detras del `GameWidget` en `GameScreen`.
   @override
-  Color backgroundColor() => CuteTheme.background;
+  Color backgroundColor() => const Color(0x00000000);
 
   @override
   Future<void> onLoad() async {

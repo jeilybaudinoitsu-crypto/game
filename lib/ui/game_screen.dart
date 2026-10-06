@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../estetica/color.dart';
 import '../game/game_config.dart';
 import '../game/pong_game.dart';
+import '../personajes/conejo_animation_view.dart';
+import '../personajes/conejo_player.dart';
 import 'menu_screen.dart';
 import 'widgets/cute_button.dart';
 import 'widgets/score_board.dart';
@@ -35,6 +39,19 @@ class _GameScreenState extends State<GameScreen> {
   late final PongGame _game;
   GameResult? _result;
 
+  /// Animacion de reaction que se muestra al puntuar, o `null` si no hay
+  /// ninguna activa. Ver [_celebrate].
+  ConejoAnimation? _reaction;
+
+  /// Marcador anterior, para detectar quien acaba de anotar.
+  Score _lastScore = Score();
+
+  /// Oculta la animacion de reaction pasado un momento.
+  Timer? _reactionTimer;
+
+  /// Tiempo que la animacion de reaction queda en pantalla.
+  static const _reactionDuration = Duration(milliseconds: 1400);
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +63,12 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    _reactionTimer?.cancel();
+    super.dispose();
+  }
+
   void _onGameOver(GameResult result) {
     if (!mounted) return;
     setState(() => _result = result);
@@ -53,13 +76,43 @@ class _GameScreenState extends State<GameScreen> {
 
   /// El marcador del HUD se lee del juego, asi que hay que repintar cuando
   /// cambia. Sin esto el tablero se queda congelado en el marcador inicial.
-  void _onScoreChanged(Score _) {
+  ///
+  /// De paso detecta quien acaba de puntuar para lanzar la animacion del
+  /// conejo: `win.png` si gana el jugador 1, `losse.png` si gana el 2.
+  void _onScoreChanged(Score score) {
     if (!mounted) return;
-    setState(() {});
+
+    final wonPoint = score.player1 > _lastScore.player1;
+    final lostPoint = score.player2 > _lastScore.player2;
+    _lastScore = Score()
+      ..player1 = score.player1
+      ..player2 = score.player2;
+
+    setState(() {
+      // Al terminar la partida manda el panel de resultado, asi que aqui solo
+      // se muestra mientras la partida sigue viva.
+      if (wonPoint || lostPoint) {
+        _celebrate(won: wonPoint);
+      }
+    });
+  }
+
+  /// Muestra la animacion del conejo durante [_reactionDuration].
+  void _celebrate({required bool won}) {
+    _reaction = won ? ConejoAnimation.win : ConejoAnimation.loss;
+    _reactionTimer?.cancel();
+    _reactionTimer = Timer(_reactionDuration, () {
+      if (mounted) setState(() => _reaction = null);
+    });
   }
 
   void _restart() {
-    setState(() => _result = null);
+    _reactionTimer?.cancel();
+    setState(() {
+      _result = null;
+      _reaction = null;
+      _lastScore = Score();
+    });
     _game.resetMatch();
   }
 
@@ -68,74 +121,100 @@ class _GameScreenState extends State<GameScreen> {
     final finished = _result != null;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // --- Juego ------------------------------------------------------
-          Positioned.fill(
-            child: GameWidget<PongGame>(
-              game: _game,
-              autofocus: true,
-              // El canvas es transparente para que se vea el degradado pastel.
-              backgroundBuilder: (context) => const ColoredBox(
-                color: CuteTheme.background,
+      // El degradado va aqui para que se vea a traves del canvas de Flame,
+      // que es transparente: es el mismo fondo que el menu.
+      body: Container(
+        decoration: const BoxDecoration(gradient: CuteTheme.backdrop),
+        child: Stack(
+          children: [
+            // --- Juego --------------------------------------------------
+            Positioned.fill(
+              child: GameWidget<PongGame>(
+                game: _game,
+                autofocus: true,
+                // Sin fondo: el `GameWidget` no pinta nada, para que se vea el
+                // degradado pastel del `Container` de abajo. Flame ya pinta
+                // transparente por `backgroundColor()` en `PongGame`.
+                backgroundBuilder: (context) => const SizedBox.shrink(),
               ),
             ),
-          ),
 
-          // --- Marcador (se oculta al terminar) ---------------------------
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 8,
-            left: 0,
-            right: 0,
-            child: IgnorePointer(
-              // Aparece y desaparece de golpe, sin fundido.
-              child: finished
-                  ? const SizedBox.shrink()
-                  : Center(
-                      child: ScoreBoard(
-                        player1Score: _game.score.player1,
-                        player2Score: _game.score.player2,
-                        pointsToWin: GameConfig.pointsToWin,
-                        player2Label:
-                            widget.mode == GameMode.vsAI ? 'IA' : 'Jugador 2',
+            // --- Marcador (se oculta al terminar) ---------------------------
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + 8,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                // Aparece y desaparece de golpe, sin fundido.
+                child: finished
+                    ? const SizedBox.shrink()
+                    : Center(
+                        child: ScoreBoard(
+                          player1Score: _game.score.player1,
+                          player2Score: _game.score.player2,
+                          pointsToWin: GameConfig.pointsToWin,
+                          player2Label: widget.mode == GameMode.vsAI
+                              ? 'IA'
+                              : 'Jugador 2',
+                        ),
+                      ),
+              ),
+            ),
+
+            // --- Boton de menu ----------------------------------------------
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + 8,
+              left: 10,
+              child: _CircleIconButton(
+                icon: Icons.arrow_back_rounded,
+                tooltip: 'Volver al menu',
+                onPressed: widget.onExit,
+              ),
+            ),
+
+            // --- Pista de controles -----------------------------------------
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.paddingOf(context).bottom + 12,
+              child: IgnorePointer(
+                // Aparece y desaparece de golpe, sin fundido.
+                child: finished
+                    ? const SizedBox.shrink()
+                    : Center(child: _controlsHint()),
+              ),
+            ),
+
+            // --- Reaccion al puntuar (win / losse) --------------------------
+            // Va en el centro y no bloquea los toques (`IgnorePointer`) para no
+            // estorbar mientras la partida continua.
+            if (!finished && _reaction != null)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Center(
+                    child: SizedBox(
+                      height: MediaQuery.sizeOf(context).height * 0.3,
+                      width: double.infinity,
+                      child: ConejoAnimationView(
+                        animation: _reaction!,
+                        widthFraction: 0.66,
+                        heightFraction: 1,
                       ),
                     ),
-            ),
-          ),
+                  ),
+                ),
+              ),
 
-          // --- Boton de menu ----------------------------------------------
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 8,
-            left: 10,
-            child: _CircleIconButton(
-              icon: Icons.arrow_back_rounded,
-              tooltip: 'Volver al menu',
-              onPressed: widget.onExit,
-            ),
-          ),
-
-          // --- Pista de controles -----------------------------------------
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: MediaQuery.paddingOf(context).bottom + 12,
-            child: IgnorePointer(
-              // Aparece y desaparece de golpe, sin fundido.
-              child: finished
-                  ? const SizedBox.shrink()
-                  : Center(child: _controlsHint()),
-            ),
-          ),
-
-          // --- Panel de resultado -----------------------------------------
-          if (finished)
-            _ResultOverlay(
-              result: _result!,
-              mode: widget.mode,
-              onRestart: _restart,
-              onExit: widget.onExit,
-            ),
-        ],
+            // --- Panel de resultado -----------------------------------------
+            if (finished)
+              _ResultOverlay(
+                result: _result!,
+                mode: widget.mode,
+                onRestart: _restart,
+                onExit: widget.onExit,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -143,7 +222,10 @@ class _GameScreenState extends State<GameScreen> {
   Widget _controlsHint() {
     if (usesKeyboard) {
       return widget.mode == GameMode.vsAI
-          ? const CuteChip(label: 'W / S  ·  moverte', icon: Icons.keyboard_rounded)
+          ? const CuteChip(
+              label: 'W / S  ·  moverte',
+              icon: Icons.keyboard_rounded,
+            )
           : const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -226,14 +308,21 @@ class _ResultOverlay extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        won
-                            ? Icons.celebration_rounded
-                            : Icons.sports_tennis_rounded,
-                        size: compact ? 54 : 68,
-                        color: CuteTheme.player1,
+                      // Conejo de victoria o derrota: el mismo criterio que
+                      // el titulo, con la animacion de `win.png` cuando gana
+                      // el jugador 1 y `losse.png` cuando gana el jugador 2.
+                      SizedBox(
+                        height: compact ? 150 : 210,
+                        width: double.infinity,
+                        child: ConejoAnimationView(
+                          animation: won
+                              ? ConejoAnimation.win
+                              : ConejoAnimation.loss,
+                          widthFraction: 0.72,
+                          heightFraction: 1,
+                        ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         _titleFor(won: won),
                         style: CuteTheme.title(compact ? 26 : 32),
