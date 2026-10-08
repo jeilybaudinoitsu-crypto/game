@@ -195,10 +195,13 @@ class _GameScreenState extends State<GameScreen> {
                     child: SizedBox(
                       height: MediaQuery.sizeOf(context).height * 0.3,
                       width: double.infinity,
-                      child: ConejoAnimationView(
-                        animation: _reaction!,
-                        widthFraction: 0.66,
-                        heightFraction: 1,
+                      child: Transform.translate(
+                        offset: const Offset(-80, -70),//posicion del conejo de reaccion al puntuar, se puede ajustar para que quede centrado
+                        child: ConejoAnimationView(
+                          animation: _reaction!,
+                          widthFraction: 0.66,
+                          heightFraction: 1,
+                        ),
                       ),
                     ),
                   ),
@@ -314,12 +317,15 @@ class _ResultOverlay extends StatelessWidget {
                       SizedBox(
                         height: compact ? 150 : 210,
                         width: double.infinity,
-                        child: ConejoAnimationView(
-                          animation: won
-                              ? ConejoAnimation.win
-                              : ConejoAnimation.loss,
-                          widthFraction: 0.72,
-                          heightFraction: 1,
+                        child: Transform.translate(
+                          offset: const Offset(-80, -70),
+                          child: ConejoAnimationView(
+                            animation: won
+                                ? ConejoAnimation.win
+                                : ConejoAnimation.loss,
+                            widthFraction: 0.72,
+                            heightFraction: 1,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 4),

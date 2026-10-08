@@ -62,7 +62,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
                         // --- Titulo --------------------------------------
                         Text(
-                          'Pin Pon Cute',
+                          'Pin Pon Game',
                           textAlign: TextAlign.center,
                           style: CuteTheme.title(compact ? 34 : 44),
                         ),
@@ -79,19 +79,20 @@ class _MenuScreenState extends State<MenuScreen> {
 
                         SizedBox(height: compact ? 18 : 34),
 
-                        // --- Conejo de bienvenida ---------------------------
-                        // Se reserva el hueco con una altura fija proporcional
-                        // para que el menu no salte al cargar el sprite.
-                        SizedBox(
-                          height: (constraints.maxHeight * 0.26).clamp(
-                            120.0,
-                            240.0,
-                          ),
-                          width: double.infinity,
-                          child: const ConejoAnimationView(
-                            animation: ConejoAnimation.inicio,
-                            widthFraction: 0.62,
-                            heightFraction: 1,
+                        // --- Conejo de bienvenida (Centrado) -----------------
+                        Transform.translate(
+                          offset: const Offset(-100,-50), //desplaza el conejo hacia la izquierda derecha y hacia arriba o abajo
+                          child: SizedBox(
+                            height: (constraints.maxHeight * 0.26).clamp(
+                              120.0,
+                              240.0,
+                            ),
+                            width: double.infinity,
+                            child: const ConejoAnimationView(
+                              animation: ConejoAnimation.inicio,
+                              widthFraction: 0.90, //ancho del conejo respecto al ancho de la pantalla
+                              heightFraction: 0.90, //alto del conejo respecto al alto de la pantalla
+                            ),
                           ),
                         ),
 
@@ -155,7 +156,7 @@ class _MenuScreenState extends State<MenuScreen> {
     final difficulty = await showModalBottomSheet<Difficulty>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => _DifficultySheet(),
+      builder: (context) => const _DifficultySheet(),
     );
 
     // Si el usuario cierra la hoja sin elegir, no se inicia la partida.
@@ -256,9 +257,7 @@ class _DifficultyOption extends StatelessWidget {
   };
 }
 
-/// `true` en Web y escritorio, donde los raquetas se controlan con el teclado.
-///
-/// En Android e iOS el control es arrastrar la raqueta con el dedo.
+/// `true` en Web y escritorio, donde las raquetas se controlan con el teclado.
 bool get usesKeyboard =>
     kIsWeb ||
     defaultTargetPlatform == TargetPlatform.linux ||
